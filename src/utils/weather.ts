@@ -32,32 +32,37 @@ export const mapVMOCode = (code: number, isDay: boolean) => {
     return cloud
   }
 
-  if (code >= 4 && code < 13 || code >= 30 && code < 36 || code >= 40 && code < 50) {
+  if (code >= 4 && code < 13 || code === 28 || code >= 30 && code < 36 || code >= 40 && code < 50) {
     return fog
   }
 
-  if (code >=14 && code < 17 || code === 20 || code >= 50 && code < 60) {
+  if (code >=14 && code < 17 || code === 20 || code === 24 || code >= 50 && code < 60) {
     return cloudDrizzle
   }
 
-  if (code === 21 || code >= 60 && code < 70) {
+  if (code === 21 || code === 23 || code >= 60 && code < 70) {
     return cloudRainLight
   }
   
-  if (code === 22 || code === 26 || code >= 36 && code < 40 || code >= 83 && code < 91) {
+  if (code === 22 || code === 26 || code >= 36 && code < 40 || code >= 70 && code < 80 || code >= 83 && code < 91) {
     return cloudSnow
   }
 
-  if (code >= 70 && code < 85) {
+  if (code === 25 || code >= 80 && code < 85) {
     return cloudRain
   }
 
-  if (code === 13 || code === 17 || code >= 95 && code < 100) {
+  if (code === 13 || code === 17 || code === 29 || code >= 95 && code < 100) {
     return cloudLightning
   }
 
   if (code === 18) {
     return wind
+  }
+
+  if (code === 27) {
+    // should be hail logo or ice logo
+    return cloudSnow
   }
 
   return dots
