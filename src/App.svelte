@@ -9,8 +9,11 @@
 <Header />
 
 <main>
-  <WeatherWidget />
-  <div class="container">
+  <div class="section">
+    <WeatherWidget />
+  </div>
+
+  <div class="section">
     {#each $services as service}
       <Card {service} />
     {/each}
@@ -18,7 +21,7 @@
 </main>
 
 <style>
-  .container {
+  .section {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
