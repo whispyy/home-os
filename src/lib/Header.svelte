@@ -7,10 +7,10 @@
   let query = "";
 
   function handleKeydown(e: KeyboardEvent) {
-    if (e.key === 'Enter') {
-      window.open(`https://www.google.com/search?q=${query}`, '_blank')
+    if (e.key === "Enter") {
+      window.open(`https://www.google.com/search?q=${query}`, "_blank");
     }
-	}
+  }
 </script>
 
 <header>
@@ -64,7 +64,7 @@
     }
 
     img {
-    filter: none;
-  }
+      filter: none;
+    }
   }
 </style>
