@@ -9,6 +9,7 @@
   function handleKeydown(e: KeyboardEvent) {
     if (e.key === "Enter") {
       window.open(`https://www.google.com/search?q=${query}`, "_blank");
+      query = "";
     }
   }
 </script>
@@ -33,6 +34,7 @@
 
 <style>
   header {
+    z-index: 1;
     top: 0;
     left: 0;
     right: 0;
@@ -60,11 +62,8 @@
 
   @media (prefers-color-scheme: light) {
     header {
-      background-color: #f9f9f9;
-    }
-
-    img {
-      filter: none;
+      background-color: #708090;
+      border-bottom: 1px solid #ffffff;
     }
   }
 </style>

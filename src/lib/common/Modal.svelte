@@ -100,4 +100,10 @@
     display: flex;
     justify-content: space-between;
   }
+
+  @media (prefers-color-scheme: light) {
+    .modal {
+      background-color: #708090;
+    }
+  }
 </style>

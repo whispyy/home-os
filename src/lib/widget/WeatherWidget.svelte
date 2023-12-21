@@ -113,11 +113,8 @@
 
   @media (prefers-color-scheme: light) {
     .card {
-      border: solid 1px #213547;
-    }
-
-    img {
-      filter: none;
+      background-color: #708090;
+      color: #ffffff;
     }
   }
 </style>
