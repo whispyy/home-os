@@ -1,6 +1,7 @@
 <script lang="ts">
   import Card from "./lib/Card.svelte";
   import Header from "./lib/Header.svelte";
+  import DownloadWidget from "./lib/widget/DownloadWidget.svelte";
   import WeatherWidget from "./lib/widget/WeatherWidget.svelte";
 
   import { services } from "./utils/service";
@@ -11,6 +12,7 @@
 <main>
   <div class="section">
     <WeatherWidget />
+    <DownloadWidget />
   </div>
 
   <div class="section">
