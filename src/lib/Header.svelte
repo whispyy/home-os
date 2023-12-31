@@ -2,8 +2,10 @@
   import AddService from "./AddService.svelte";
   import plusCircle from "../assets/header/plus-circle.svg";
   import userCircle from "../assets/header/user-circle.svg";
+  import HeaderDrawer from "./HeaderDrawer.svelte";
 
   let isAddOpen = false;
+  let isDrawerOpen = false;
   let query = "";
 
   function handleKeydown(e: KeyboardEvent) {
@@ -23,7 +25,7 @@
     <input type="text" bind:value={query} on:keydown={handleKeydown} />
   </div>
 
-  <button on:click={() => (isAddOpen = true)}>
+  <button on:click={() => (isDrawerOpen = true)}>
     <img src={userCircle} height="30px" alt="user menu button" />
   </button>
 </header>
@@ -31,6 +33,8 @@
 {#if isAddOpen}
   <AddService isOpen={isAddOpen} onClose={() => (isAddOpen = false)} />
 {/if}
+
+<HeaderDrawer bind:open={isDrawerOpen} />
 
 <style>
   header {

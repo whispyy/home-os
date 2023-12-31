@@ -67,7 +67,7 @@
 <style>
   .card {
     border-radius: 16px;
-    border: solid 1px white;
+    border: solid 1px #ffffff;
     background-color: transparent;
 
     display: flex;

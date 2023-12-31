@@ -56,9 +56,10 @@ button {
 button:hover {
   border-color: #646cff;
 }
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+
+button:disabled {
+  cursor: not-allowed;
+  border-color: transparent;
 }
 
 input,
@@ -83,6 +84,10 @@ select {
   }
   button {
     background-color: #708090;
+    color: #ffffff;
+  }
+  button:disabled {
+    opacity: 0.5;
   }
   input,
   textarea,
