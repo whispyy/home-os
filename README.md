@@ -4,6 +4,9 @@
 
 You can set the `VITE_DEFAULT_SERVICES` to an array object following the `Service` interface defined in `/src/utils/service.ts` to prefill some services on your board.
 
+You can set `VITE_INFLUXDB_ORG`, `VITE_INFLUXDB_BUCKET` and `VITE_INFLUXDB_TOKEN` to retrieve temperature information from influx db. The query to retrieve data might need to change if it hasn't the same shape/attribute than what has been set.
+
+
 __example:__
 
 ```JSON
