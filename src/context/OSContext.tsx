@@ -12,6 +12,7 @@ type Action =
   | { type: 'RENAME_CATEGORY'; categoryId: string; name: string }
   | { type: 'ADD_LINK'; categoryId: string; link: Omit<Link, 'id'> }
   | { type: 'REMOVE_LINK'; categoryId: string; linkId: string }
+  | { type: 'UPDATE_LINK'; categoryId: string; linkId: string; link: Omit<Link, 'id'> }
   | { type: 'ADD_SHORTCUT'; linkId: string; position: { x: number; y: number } }
   | { type: 'REMOVE_SHORTCUT'; linkId: string }
   | { type: 'MOVE_SHORTCUT'; linkId: string; position: { x: number; y: number } }
@@ -71,6 +72,15 @@ function reducer(state: Config, action: Action): Config {
             : c
         ),
         shortcuts: state.shortcuts.filter((s) => s.linkId !== action.linkId),
+      };
+    case 'UPDATE_LINK':
+      return {
+        ...state,
+        categories: state.categories.map((c) =>
+          c.id === action.categoryId
+            ? { ...c, links: c.links.map((l) => l.id === action.linkId ? { ...l, ...action.link } : l) }
+            : c
+        ),
       };
     case 'ADD_SHORTCUT':
       if (state.shortcuts.some((s) => s.linkId === action.linkId)) return state;

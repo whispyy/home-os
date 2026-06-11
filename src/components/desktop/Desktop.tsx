@@ -5,6 +5,7 @@ import { useOS } from '../../context/OSContext';
 import { useWindows } from '../../context/WindowContext';
 import { widgetRegistry } from '../../widgets/registry';
 import WidgetContainer from '../../widgets/WidgetContainer';
+import { Settings } from 'lucide-react';
 import { theme } from '../../styles/theme';
 import Taskbar from './Taskbar';
 import StartMenu from './StartMenu';
@@ -83,6 +84,11 @@ export default function Desktop() {
         <>
           <CtxOverlay onClick={() => setCtxMenu(null)} />
           <CtxMenu style={{ left: ctxMenu.x, top: ctxMenu.y }}>
+            <CtxItem onClick={() => { setSettingsOpen(true); setCtxMenu(null); }}>
+              <Settings size={14} />
+              Settings
+            </CtxItem>
+            <CtxDivider />
             <CtxLabel>Add widget</CtxLabel>
             {Object.values(widgetRegistry).map((def) => (
               <CtxItem key={def.type} onClick={() => addWidget(def.type)}>
@@ -134,6 +140,12 @@ const CtxLabel = styled.div`
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: ${theme.colors.textMuted};
+`;
+
+const CtxDivider = styled.hr`
+  border: none;
+  border-top: 1px solid ${theme.colors.border};
+  margin: 4px 0;
 `;
 
 const CtxItem = styled.button`

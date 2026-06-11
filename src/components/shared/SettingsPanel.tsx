@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
-import { X, Download, Upload, RotateCcw, Plus, Trash2 } from 'lucide-react';
+import { X, Download, Upload, RotateCcw, Plus, Trash2, Pencil, Check } from 'lucide-react';
 import { useOS } from '../../context/OSContext';
 import { exportConfig, importConfig } from '../../utils/config';
 import { DEMO_CONFIG } from '../../types/config';
@@ -17,6 +17,8 @@ export default function SettingsPanel({ onClose }: Props) {
   const [tab, setTab] = useState<Tab>('links');
   const [newCatName, setNewCatName] = useState('');
   const [newLink, setNewLink] = useState({ categoryId: '', label: '', url: '', icon: '' });
+  const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
+  const [editValues, setEditValues] = useState({ label: '', url: '', icon: '' });
   const [importError, setImportError] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -35,6 +37,22 @@ export default function SettingsPanel({ onClose }: Props) {
     if (!newCatName.trim()) return;
     dispatch({ type: 'ADD_CATEGORY', name: newCatName.trim() });
     setNewCatName('');
+  }
+
+  function startEdit(link: { id: string; label: string; url: string; icon?: string }) {
+    setEditingLinkId(link.id);
+    setEditValues({ label: link.label, url: link.url, icon: link.icon ?? '' });
+  }
+
+  function saveEdit(categoryId: string, linkId: string) {
+    if (!editValues.label.trim() || !editValues.url.trim()) return;
+    dispatch({
+      type: 'UPDATE_LINK',
+      categoryId,
+      linkId,
+      link: { label: editValues.label.trim(), url: editValues.url.trim(), icon: editValues.icon || undefined },
+    });
+    setEditingLinkId(null);
   }
 
   function addLink() {
@@ -149,17 +167,48 @@ export default function SettingsPanel({ onClose }: Props) {
                     </CatHeader>
                     {cat.links.map((link) => (
                       <LinkRow key={link.id}>
-                        <span>{link.icon ?? '🔗'}</span>
-                        <LinkText>
-                          <strong>{link.label}</strong>
-                          <small>{link.url}</small>
-                        </LinkText>
-                        <DangerBtn onClick={() => dispatch({ type: 'ADD_SHORTCUT', linkId: link.id, position: { x: 80, y: 80 } })}>
-                          📌
-                        </DangerBtn>
-                        <DangerBtn onClick={() => dispatch({ type: 'REMOVE_LINK', categoryId: cat.id, linkId: link.id })}>
-                          <Trash2 size={13} />
-                        </DangerBtn>
+                        {editingLinkId === link.id ? (
+                          <EditForm>
+                            <EditRow>
+                              <TextInput
+                                placeholder="Icon"
+                                value={editValues.icon}
+                                onChange={(e) => setEditValues({ ...editValues, icon: e.target.value })}
+                                style={{ width: 52, flex: 'none' }}
+                              />
+                              <TextInput
+                                placeholder="Label"
+                                value={editValues.label}
+                                onChange={(e) => setEditValues({ ...editValues, label: e.target.value })}
+                              />
+                            </EditRow>
+                            <EditRow>
+                              <TextInput
+                                placeholder="URL"
+                                value={editValues.url}
+                                onChange={(e) => setEditValues({ ...editValues, url: e.target.value })}
+                                onKeyDown={(e) => { if (e.key === 'Enter') saveEdit(cat.id, link.id); if (e.key === 'Escape') setEditingLinkId(null); }}
+                              />
+                              <IconBtn onClick={() => saveEdit(cat.id, link.id)} title="Save"><Check size={14} /></IconBtn>
+                              <IconBtn onClick={() => setEditingLinkId(null)} title="Cancel"><X size={14} /></IconBtn>
+                            </EditRow>
+                          </EditForm>
+                        ) : (
+                          <>
+                            <span>{link.icon ?? '🔗'}</span>
+                            <LinkText>
+                              <strong>{link.label}</strong>
+                              <small>{link.url}</small>
+                            </LinkText>
+                            <IconBtn onClick={() => startEdit(link)} title="Edit"><Pencil size={13} /></IconBtn>
+                            <DangerBtn onClick={() => dispatch({ type: 'ADD_SHORTCUT', linkId: link.id, position: { x: 80, y: 80 } })}>
+                              📌
+                            </DangerBtn>
+                            <DangerBtn onClick={() => dispatch({ type: 'REMOVE_LINK', categoryId: cat.id, linkId: link.id })}>
+                              <Trash2 size={13} />
+                            </DangerBtn>
+                          </>
+                        )}
                       </LinkRow>
                     ))}
                   </CategoryItem>
@@ -380,6 +429,29 @@ const LinkText = styled.div`
   min-width: 0;
   strong { font-size: ${theme.font.size.sm}; }
   small { font-size: ${theme.font.size.xs}; color: ${theme.colors.textMuted}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+`;
+
+const EditForm = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const EditRow = styled.div`
+  display: flex;
+  gap: 4px;
+  align-items: center;
+`;
+
+const IconBtn = styled.button`
+  display: inline-flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: ${theme.radius.sm};
+  color: ${theme.colors.textMuted};
+  flex-shrink: 0;
+  &:hover { background: ${theme.colors.surfaceHover}; color: ${theme.colors.text}; }
 `;
 
 const Divider = styled.div`
