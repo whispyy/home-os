@@ -18,6 +18,7 @@ export interface Shortcut {
 }
 
 export interface Config {
+  widgets: import('./widget').WidgetInstance[];
   wallpaper: string;
   taskbarColor: string;
   categories: Category[];
@@ -29,6 +30,7 @@ export const DEFAULT_CONFIG: Config = {
   taskbarColor: '#0f0f23',
   categories: [],
   shortcuts: [],
+  widgets: [],
 };
 
 export const DEMO_CONFIG: Config = {
@@ -81,4 +83,5 @@ export const DEMO_CONFIG: Config = {
     { linkId: 'link-grafana', position: { x: 24, y: 120 } },
     { linkId: 'link-notion',  position: { x: 24, y: 216 } },
   ],
+  widgets: [],
 };

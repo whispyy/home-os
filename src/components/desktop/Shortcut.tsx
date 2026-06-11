@@ -32,6 +32,7 @@ export default function Shortcut({ shortcut }: Props) {
 
   function handleContextMenu(e: React.MouseEvent) {
     e.preventDefault();
+    e.stopPropagation();
     setContextMenu({ x: e.clientX, y: e.clientY });
   }
 

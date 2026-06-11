@@ -214,11 +214,123 @@ src/
 
 ---
 
+## Widget System
+
+Widgets are draggable, resizable cards that live on the desktop canvas. They sit below open windows in z-index. Multiple instances of the same widget type are supported (e.g. weather for two cities).
+
+### Adding widgets
+Right-click on the desktop → "Add widget" → picker of available widget types.
+
+### Widget Definition (registry pattern)
+
+Each widget type is self-contained in `src/widgets/<type>/`:
+
+```ts
+interface WidgetDefinition<TConfig = Record<string, unknown>> {
+  type: string                    // unique key e.g. 'weather'
+  label: string                   // display name
+  icon: string                    // emoji
+  defaultConfig: TConfig          // initial config when added
+  defaultSize: { width: number; height: number }
+  minSize?: { width: number; height: number }
+  component: React.ComponentType<WidgetProps<TConfig>>
+  configPanel?: React.ComponentType<WidgetConfigProps<TConfig>>  // optional inline settings
+}
+```
+
+Central registry at `src/widgets/registry.ts` — maps type string → definition. Adding a new widget = one new folder + one registry line.
+
+### Widget Instance (persisted in config)
+
+```ts
+interface WidgetInstance {
+  id: string
+  type: string
+  position: { x: number; y: number }
+  size: { width: number; height: number }
+  config: Record<string, unknown>
+}
+```
+
+### Widget Props contract
+
+```ts
+interface WidgetProps<TConfig> {
+  id: string
+  config: TConfig
+  onUpdateConfig: (config: Partial<TConfig>) => void
+  onRemove: () => void
+}
+```
+
+### Widget Container
+
+`WidgetContainer.tsx` wraps every widget instance:
+- Draggable + resizable via **react-rnd**
+- Right-click context menu: Settings, Remove
+- Renders the widget's `component` inside
+
+### Data fetching
+
+Each widget manages its own fetching (useEffect + setInterval). No shared layer — keeps widgets independent.
+
+### Config changes
+
+`widgets: WidgetInstance[]` added to `Config`. OSContext gains:
+- `addWidget(type, position)` — creates instance with defaults
+- `removeWidget(id)`
+- `updateWidgetConfig(id, config)`
+- `moveWidget(id, position)`
+- `resizeWidget(id, size)`
+
+### Desktop right-click menu
+
+Right-click on desktop canvas (not on a shortcut/widget) opens:
+- Add widget → sub-picker listing all registered types
+- (future) Change wallpaper
+
+### Project structure additions
+
+```
+src/
+  widgets/
+    registry.ts              # maps type → WidgetDefinition
+    WidgetContainer.tsx      # rnd wrapper + context menu
+    weather/
+      index.ts               # WidgetDefinition export
+      WeatherWidget.tsx      # component
+      WeatherConfig.tsx      # config panel
+      useWeather.ts          # data fetching hook
+```
+
+### Weather widget
+
+- **API**: open-meteo (free, no key)
+- **Geocoding**: open-meteo geocoding API (`https://geocoding-api.open-meteo.com/v1/search?name=...`) to resolve city name → lat/lon
+- **Location**: browser `navigator.geolocation` for "use my location"
+- **Config**: `{ lat, lon, cityLabel, unit: 'celsius'|'fahrenheit', refreshInterval: number }`
+- **Display**: temperature, weather condition (icon mapped from WMO weather code), wind speed, day/night background tint
+- **Refresh**: configurable interval (default 10 min)
+
+### WMO weather code → icon mapping (open-meteo)
+
+| Code | Condition | Icon |
+|---|---|---|
+| 0 | Clear sky | ☀️ / 🌙 |
+| 1–3 | Partly cloudy | 🌤️ |
+| 45–48 | Fog | 🌫️ |
+| 51–67 | Drizzle / Rain | 🌧️ |
+| 71–77 | Snow | ❄️ |
+| 80–82 | Rain showers | 🌦️ |
+| 95–99 | Thunderstorm | ⛈️ |
+
+---
+
 ## Open Questions / Future Ideas
 
 - [ ] Multiple desktop wallpaper images (local file or URL)
 - [ ] Pinned taskbar items (always visible, not just open windows)
-- [ ] Widget system (clock widget, weather, notes on desktop)
+- [ ] More widgets: clock, notes, RSS feed, system stats
 - [ ] Multiple virtual desktops / workspaces
 - [ ] Keyboard shortcuts (Win key = start menu, Alt+F4 = close window)
 - [ ] Window snap zones (snap to left/right half)

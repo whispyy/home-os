@@ -121,7 +121,7 @@ interface WindowContextValue {
 const WindowContext = createContext<WindowContextValue | null>(null);
 
 export function WindowProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, { windows: [], maxZ: 10 });
+  const [state, dispatch] = useReducer(reducer, { windows: [], maxZ: 200 });
 
   const value: WindowContextValue = {
     windows: state.windows,

@@ -1,8 +1,10 @@
 import { createContext, useContext, useReducer, useEffect } from 'react';
 import type { Config, Link } from '../types/config';
+import type { WidgetInstance } from '../types/widget';
 import { DEFAULT_CONFIG } from '../types/config';
 import { loadConfig, saveConfig } from '../utils/config';
 import { uuid } from '../utils/uuid';
+import { widgetRegistry } from '../widgets/registry';
 
 type Action =
   | { type: 'ADD_CATEGORY'; name: string; icon?: string }
@@ -16,7 +18,12 @@ type Action =
   | { type: 'SET_WALLPAPER'; wallpaper: string }
   | { type: 'SET_TASKBAR_COLOR'; color: string }
   | { type: 'IMPORT_CONFIG'; config: Config }
-  | { type: 'RESET_CONFIG' };
+  | { type: 'RESET_CONFIG' }
+  | { type: 'ADD_WIDGET'; widgetType: string; position: { x: number; y: number } }
+  | { type: 'REMOVE_WIDGET'; id: string }
+  | { type: 'UPDATE_WIDGET_CONFIG'; id: string; config: Record<string, unknown> }
+  | { type: 'MOVE_WIDGET'; id: string; position: { x: number; y: number } }
+  | { type: 'RESIZE_WIDGET'; id: string; size: { width: number; height: number } };
 
 function reducer(state: Config, action: Action): Config {
   switch (action.type) {
@@ -91,6 +98,42 @@ function reducer(state: Config, action: Action): Config {
       return action.config;
     case 'RESET_CONFIG':
       return DEFAULT_CONFIG;
+
+    case 'ADD_WIDGET': {
+      const def = widgetRegistry[action.widgetType];
+      if (!def) return state;
+      const instance: WidgetInstance = {
+        id: uuid(),
+        type: action.widgetType,
+        position: action.position,
+        size: def.defaultSize,
+        config: def.defaultConfig as Record<string, unknown>,
+      };
+      return { ...state, widgets: [...(state.widgets ?? []), instance] };
+    }
+    case 'REMOVE_WIDGET':
+      return { ...state, widgets: (state.widgets ?? []).filter((w) => w.id !== action.id) };
+    case 'UPDATE_WIDGET_CONFIG':
+      return {
+        ...state,
+        widgets: (state.widgets ?? []).map((w) =>
+          w.id === action.id ? { ...w, config: { ...w.config, ...action.config } } : w
+        ),
+      };
+    case 'MOVE_WIDGET':
+      return {
+        ...state,
+        widgets: (state.widgets ?? []).map((w) =>
+          w.id === action.id ? { ...w, position: action.position } : w
+        ),
+      };
+    case 'RESIZE_WIDGET':
+      return {
+        ...state,
+        widgets: (state.widgets ?? []).map((w) =>
+          w.id === action.id ? { ...w, size: action.size } : w
+        ),
+      };
     default:
       return state;
   }
