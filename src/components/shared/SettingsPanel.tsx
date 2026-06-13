@@ -4,13 +4,14 @@ import { X, Download, Upload, RotateCcw, Plus, Trash2, Pencil, Check } from 'luc
 import { useOS } from '../../context/OSContext';
 import { exportConfig, importConfig } from '../../utils/config';
 import { DEMO_CONFIG } from '../../types/config';
+import { widgetRegistry } from '../../widgets/registry';
 import { theme } from '../../styles/theme';
 
 interface Props {
   onClose: () => void;
 }
 
-type Tab = 'appearance' | 'links' | 'config';
+type Tab = 'appearance' | 'links' | 'widgets' | 'config';
 
 export default function SettingsPanel({ onClose }: Props) {
   const { config, dispatch } = useOS();
@@ -74,7 +75,7 @@ export default function SettingsPanel({ onClose }: Props) {
         </PanelHeader>
 
         <Tabs>
-          {(['links', 'appearance', 'config'] as Tab[]).map((t) => (
+          {(['links', 'widgets', 'appearance', 'config'] as Tab[]).map((t) => (
             <TabBtn key={t} active={tab === t} onClick={() => setTab(t)}>
               {t.charAt(0).toUpperCase() + t.slice(1)}
             </TabBtn>
@@ -214,6 +215,39 @@ export default function SettingsPanel({ onClose }: Props) {
                   </CategoryItem>
                 ))}
               </CategoryList>
+            </Section>
+          )}
+
+          {tab === 'widgets' && (
+            <Section>
+              <Label>Active widgets</Label>
+              {(config.widgets ?? []).length === 0 && (
+                <EmptyText>No widgets added yet.</EmptyText>
+              )}
+              {(config.widgets ?? []).map((w) => {
+                const def = widgetRegistry[w.type];
+                return (
+                  <WidgetRow key={w.id}>
+                    <span>{def?.icon ?? '?'}</span>
+                    <WidgetLabel>{def?.label ?? w.type}</WidgetLabel>
+                    <DangerBtn onClick={() => dispatch({ type: 'REMOVE_WIDGET', id: w.id })}>
+                      <Trash2 size={13} />
+                    </DangerBtn>
+                  </WidgetRow>
+                );
+              })}
+              <Label style={{ marginTop: 16 }}>Add widget</Label>
+              <WidgetGrid>
+                {Object.values(widgetRegistry).map((def) => (
+                  <AddWidgetBtn
+                    key={def.type}
+                    onClick={() => dispatch({ type: 'ADD_WIDGET', widgetType: def.type, position: { x: 0, y: 0 } })}
+                  >
+                    <span>{def.icon}</span>
+                    {def.label}
+                  </AddWidgetBtn>
+                ))}
+              </WidgetGrid>
             </Section>
           )}
 
@@ -463,4 +497,45 @@ const Divider = styled.div`
 const ErrorText = styled.p`
   color: ${theme.colors.danger};
   font-size: ${theme.font.size.sm};
+`;
+
+const EmptyText = styled.p`
+  font-size: ${theme.font.size.sm};
+  color: ${theme.colors.textMuted};
+`;
+
+const WidgetRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  background: ${theme.colors.bg};
+  border: 1px solid ${theme.colors.border};
+  border-radius: ${theme.radius.md};
+`;
+
+const WidgetLabel = styled.span`
+  flex: 1;
+  font-size: ${theme.font.size.sm};
+`;
+
+const WidgetGrid = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+`;
+
+const AddWidgetBtn = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: ${theme.colors.bg};
+  border: 1px solid ${theme.colors.border};
+  border-radius: ${theme.radius.md};
+  font-size: ${theme.font.size.sm};
+  color: ${theme.colors.text};
+  transition: background 0.15s;
+  &:hover { background: ${theme.colors.surfaceHover}; }
 `;
