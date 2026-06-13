@@ -1,7 +1,6 @@
 import styled from 'styled-components';
 import { useOS } from '../../context/OSContext';
 import { widgetRegistry } from '../../widgets/registry';
-import { theme } from '../../styles/theme';
 
 export default function MobileWidgetStrip() {
   const { config, dispatch } = useOS();

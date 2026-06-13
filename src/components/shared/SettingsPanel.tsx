@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
-import { X, Download, Upload, RotateCcw, Plus, Trash2, Pencil, Check } from 'lucide-react';
+import { X, Download, Upload, RotateCcw, Plus, Trash2, Pencil, Check, Copy, ClipboardPaste } from 'lucide-react';
 import { useOS } from '../../context/OSContext';
 import { exportConfig, importConfig } from '../../utils/config';
 import { DEMO_CONFIG } from '../../types/config';
@@ -21,6 +21,9 @@ export default function SettingsPanel({ onClose }: Props) {
   const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState({ label: '', url: '', icon: '' });
   const [importError, setImportError] = useState('');
+  const [pasteOpen, setPasteOpen] = useState(false);
+  const [pasteValue, setPasteValue] = useState('');
+  const [copySuccess, setCopySuccess] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
@@ -32,6 +35,29 @@ export default function SettingsPanel({ onClose }: Props) {
         setImportError('');
       })
       .catch((err) => setImportError(err.message));
+  }
+
+  function handleCopyJSON() {
+    navigator.clipboard.writeText(JSON.stringify(config, null, 2)).then(() => {
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    });
+  }
+
+  function handlePasteApply() {
+    try {
+      const parsed = JSON.parse(pasteValue);
+      if (typeof parsed === 'object' && Array.isArray(parsed.categories) && Array.isArray(parsed.shortcuts)) {
+        dispatch({ type: 'IMPORT_CONFIG', config: parsed });
+        setPasteOpen(false);
+        setPasteValue('');
+        setImportError('');
+      } else {
+        setImportError('Invalid config format.');
+      }
+    } catch {
+      setImportError('Failed to parse JSON.');
+    }
   }
 
   function addCategory() {
@@ -253,14 +279,35 @@ export default function SettingsPanel({ onClose }: Props) {
 
           {tab === 'config' && (
             <Section>
+              <Label>Export</Label>
               <ActionBtn onClick={() => exportConfig(config)}>
-                <Download size={14} /> Export config
+                <Download size={14} /> Download JSON
               </ActionBtn>
+              <ActionBtn onClick={handleCopyJSON} style={{ marginTop: 8 }}>
+                <Copy size={14} /> {copySuccess ? 'Copied!' : 'Copy JSON'}
+              </ActionBtn>
+
+              <Label style={{ marginTop: 16 }}>Import</Label>
               <input ref={fileRef} type="file" accept=".json" style={{ display: 'none' }} onChange={handleImport} />
-              <ActionBtn onClick={() => fileRef.current?.click()} style={{ marginTop: 8 }}>
-                <Upload size={14} /> Import config
+              <ActionBtn onClick={() => fileRef.current?.click()}>
+                <Upload size={14} /> Import from file
               </ActionBtn>
+              <SecondaryBtn onClick={() => { setPasteOpen((v) => !v); setImportError(''); }} style={{ marginTop: 8 }}>
+                <ClipboardPaste size={14} /> {pasteOpen ? 'Cancel' : 'Paste JSON'}
+              </SecondaryBtn>
+              {pasteOpen && (
+                <>
+                  <PasteArea
+                    value={pasteValue}
+                    onChange={(e) => setPasteValue(e.target.value)}
+                    placeholder='Paste your config JSON here...'
+                    spellCheck={false}
+                  />
+                  <ActionBtn onClick={handlePasteApply}>Apply</ActionBtn>
+                </>
+              )}
               {importError && <ErrorText>{importError}</ErrorText>}
+
               <Divider />
               <DangerBtn
                 style={{ padding: '8px 12px', borderRadius: theme.radius.md, width: '100%' }}
@@ -271,6 +318,7 @@ export default function SettingsPanel({ onClose }: Props) {
             </Section>
           )}
         </PanelContent>
+        <PanelFooter>build: {__COMMIT_SHA__}</PanelFooter>
       </Panel>
     </Overlay>
   );
@@ -488,10 +536,48 @@ const IconBtn = styled.button`
   &:hover { background: ${theme.colors.surfaceHover}; color: ${theme.colors.text}; }
 `;
 
+const PanelFooter = styled.div`
+  padding: 8px 20px;
+  border-top: 1px solid ${theme.colors.border};
+  font-size: 11px;
+  color: ${theme.colors.textMuted};
+  font-family: monospace;
+  flex-shrink: 0;
+`;
+
 const Divider = styled.div`
   height: 1px;
   background: ${theme.colors.border};
   margin: 12px 0;
+`;
+
+const SecondaryBtn = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: transparent;
+  color: ${theme.colors.text};
+  border: 1px solid ${theme.colors.border};
+  border-radius: ${theme.radius.md};
+  font-size: ${theme.font.size.sm};
+  transition: background 0.15s;
+  &:hover { background: ${theme.colors.surfaceHover}; }
+`;
+
+const PasteArea = styled.textarea`
+  width: 100%;
+  min-height: 140px;
+  background: ${theme.colors.bg};
+  border: 1px solid ${theme.colors.border};
+  border-radius: ${theme.radius.md};
+  padding: 8px 10px;
+  font-size: ${theme.font.size.xs};
+  font-family: monospace;
+  color: ${theme.colors.text};
+  resize: vertical;
+  outline: none;
+  &:focus { border-color: ${theme.colors.accent}; }
 `;
 
 const ErrorText = styled.p`

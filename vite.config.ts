@@ -1,12 +1,21 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import { execSync } from 'child_process'
+
+const commitSha = (() => {
+  try {
+    return execSync('git rev-parse --short HEAD').toString().trim();
+  } catch {
+    return 'unknown';
+  }
+})()
 
 export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['favicon.ico', 'pwa-icon.svg', 'apple-touch-icon-180x180.png'],
       manifest: {
         name: 'home-os',
@@ -52,5 +61,6 @@ export default defineConfig({
   ],
   define: {
     'process.env.NODE_ENV': JSON.stringify('production'),
+    __COMMIT_SHA__: JSON.stringify(commitSha),
   },
 })

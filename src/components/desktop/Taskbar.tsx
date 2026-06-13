@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { Menu, Settings } from 'lucide-react';
+import { Menu, Settings, RefreshCw } from 'lucide-react';
 import { useWindows } from '../../context/WindowContext';
 import { useOS } from '../../context/OSContext';
+import { usePWAUpdate } from '../../hooks/usePWAUpdate';
 import { theme } from '../../styles/theme';
 
 interface Props {
@@ -14,6 +15,7 @@ interface Props {
 export default function Taskbar({ onStartMenu, onSettings, startMenuOpen }: Props) {
   const { windows, restoreWindow, focusWindow } = useWindows();
   const { config } = useOS();
+  const { needsUpdate, applyUpdate } = usePWAUpdate();
   const [time, setTime] = useState(() => new Date());
 
   useEffect(() => {
@@ -52,6 +54,11 @@ export default function Taskbar({ onStartMenu, onSettings, startMenuOpen }: Prop
       </WindowTabs>
 
       <RightArea>
+        {needsUpdate && (
+          <UpdateBtn onClick={applyUpdate} title="Update available">
+            <RefreshCw size={15} />
+          </UpdateBtn>
+        )}
         <SettingsBtn onClick={onSettings}>
           <Settings size={15} />
         </SettingsBtn>
@@ -146,6 +153,20 @@ const RightArea = styled.div`
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+`;
+
+const UpdateBtn = styled.button`
+  display: flex;
+  align-items: center;
+  padding: 6px;
+  border-radius: ${theme.radius.sm};
+  color: ${theme.colors.accent};
+  transition: color 0.15s, background 0.15s;
+
+  &:hover {
+    color: ${theme.colors.accentHover};
+    background: ${theme.colors.surfaceHover};
+  }
 `;
 
 const SettingsBtn = styled.button`

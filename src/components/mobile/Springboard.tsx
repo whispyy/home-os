@@ -7,11 +7,13 @@ import AppIcon from './AppIcon';
 import AppFolder from './AppFolder';
 import MobileWidgetStrip from './MobileWidgetStrip';
 import SettingsPanel from '../shared/SettingsPanel';
+import { usePWAUpdate } from '../../hooks/usePWAUpdate';
 
 export default function Springboard() {
   const { config } = useOS();
   const [openFolder, setOpenFolder] = useState<Category | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const { needsUpdate, applyUpdate } = usePWAUpdate();
 
   // Shortcuts as individual icons + categories as folders
   const shortcuts = config.shortcuts
@@ -53,6 +55,12 @@ export default function Springboard() {
           <SettingsIconBox>⚙️</SettingsIconBox>
           <SettingsLabel>Settings</SettingsLabel>
         </SettingsIcon>
+        {needsUpdate && (
+          <SettingsIcon onClick={applyUpdate}>
+            <UpdateIconBox>🔄</UpdateIconBox>
+            <SettingsLabel>Update</SettingsLabel>
+          </SettingsIcon>
+        )}
       </Grid>
 
       {openFolder && (
@@ -146,6 +154,11 @@ const SettingsIconBox = styled.div`
   font-size: 24px;
   box-shadow: ${theme.shadow.icon};
   transition: opacity 0.1s, transform 0.1s;
+`;
+
+const UpdateIconBox = styled(SettingsIconBox)`
+  background: linear-gradient(135deg, #1a3a2e, #0a2a1a);
+  border-color: ${theme.colors.accent};
 `;
 
 const SettingsLabel = styled.span`
